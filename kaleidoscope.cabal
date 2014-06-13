@@ -1,0 +1,31 @@
+name:               kaleidoscope
+version:            0.0
+stability:          Experimental
+build-type:         Simple
+cabal-version:      >=1.14
+
+
+library
+    default-language:   Haskell2010
+    ghc-options:        -Wall
+    build-depends:
+        base ==4.*,
+        pretty,
+        parsec
+    hs-source-dirs:     src
+    exposed-modules:
+        Kaleidoscope.AST
+        Kaleidoscope.Parser
+
+
+executable Kaleidoscope
+    default-language:   Haskell2010
+    ghc-options:        -Wall
+    build-depends:
+        base ==4.*,
+        mtl,
+        haskeline,
+        kaleidoscope
+    hs-source-dirs:     main
+    main-is:            Kaleidoscope.hs
+
