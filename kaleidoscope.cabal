@@ -10,12 +10,18 @@ library
     ghc-options:        -Wall
     build-depends:
         base ==4.*,
+        containers,
+        mtl,
         pretty,
-        parsec
+        parsec,
+        llvm-general ==3.2.*,
+        llvm-general-pure ==3.2.*
     hs-source-dirs:     src
     exposed-modules:
         Kaleidoscope.AST
         Kaleidoscope.Parser
+        Kaleidoscope.Codegen
+        Kaleidoscope.Emit
 
 
 executable Kaleidoscope
@@ -25,6 +31,8 @@ executable Kaleidoscope
         base ==4.*,
         mtl,
         haskeline,
+        llvm-general ==3.2.*,
+        llvm-general-pure ==3.2.*,
         kaleidoscope
     hs-source-dirs:     main
     main-is:            Kaleidoscope.hs

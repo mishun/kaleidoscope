@@ -13,9 +13,31 @@ import Kaleidoscope.AST
 lexer :: TokenParser ()
 lexer = makeTokenParser
     emptyDef { commentLine     = "#"
-             , reservedOpNames = ["+","*","-",";"]
-             , reservedNames   = ["def","extern"]
+             , reservedOpNames = ["+", "*", "-", ";"]
+             , reservedNames   = ["def", "extern"]
              }
+
+
+expr :: Parser Expr
+expr =
+    let binary s assoc = Infix (reservedOp lexer s >> return (BinaryOp s)) assoc
+        table = [ [ binary "*" AssocLeft
+                  , binary "/" AssocLeft
+                  ]
+                , [ binary "+" AssocLeft
+                  , binary "-" AssocLeft
+                  ]
+                ]
+
+    in buildExpressionParser table $ choice
+        [ try floating
+        , try int
+        , try extern
+        , try function
+        , try call
+        , variable
+        , parens lexer expr
+        ]
 
 
 int :: Parser Expr
@@ -30,20 +52,6 @@ floating = do
     return $ Float n
 
 
-expr :: Parser Expr
-expr =
-    let binary s f assoc = Infix (reservedOp lexer s >> return (BinOp f)) assoc
-        table = [ [ binary "*" Times AssocLeft
-                  , binary "/" Divide AssocLeft
-                  ]
-                , [ binary "+" Plus AssocLeft
-                  , binary "-" Minus AssocLeft
-                  ]
-                ]
-
-    in buildExpressionParser table factor
-
-
 variable :: Parser Expr
 variable = do
     var <- identifier lexer
@@ -54,7 +62,7 @@ function :: Parser Expr
 function = do
     reserved lexer "def"
     name <- identifier lexer
-    args <- parens lexer (many variable)
+    args <- parens lexer (many (identifier lexer))
     body <- expr
     return $ Function name args body
 
@@ -63,7 +71,7 @@ extern :: Parser Expr
 extern = do
     reserved lexer "extern"
     name <- identifier lexer
-    args <- parens lexer (many variable)
+    args <- parens lexer (many (identifier lexer))
     return $ Extern name args
 
 
@@ -72,22 +80,6 @@ call = do
     name <- identifier lexer
     args <- parens lexer (commaSep lexer expr)
     return $ Call name args
-
-
-factor :: Parser Expr
-factor = try floating
-      <|> try int
-      <|> try extern
-      <|> try function
-      <|> try call
-      <|> variable
-      <|> parens lexer expr
-
-
-defn :: Parser Expr
-defn = try extern
-    <|> try function
-    <|> expr
 
 
 contents :: Parser a -> Parser a
@@ -100,7 +92,7 @@ contents p = do
 
 toplevel :: Parser [Expr]
 toplevel = many $ do
-    def <- defn
+    def <- choice [try extern, try function, expr]
     reservedOp lexer ";"
     return def
 
