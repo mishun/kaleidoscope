@@ -22,6 +22,7 @@ library
         Kaleidoscope.Parser
         Kaleidoscope.Codegen
         Kaleidoscope.Emit
+        Kaleidoscope.JIT
 
 
 executable Kaleidoscope

@@ -9,6 +9,7 @@ import qualified LLVM.General.AST as AST
 import Kaleidoscope.Parser
 import Kaleidoscope.Codegen
 import Kaleidoscope.Emit
+import Kaleidoscope.JIT
 
 
 initModule :: AST.Module
@@ -38,8 +39,10 @@ repl =
                 Just input -> do
                     modn <- liftIO $ process mod' input
                     case modn of
-                        Just modn' -> loop modn'
                         Nothing    -> loop mod'
+                        Just modn' -> do
+                            _ <- liftIO $ runJIT modn'
+                            loop modn'
     in runInputT defaultSettings (loop initModule)
 
 
